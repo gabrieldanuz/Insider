@@ -12,12 +12,15 @@ import ModalLink from "../../components/ModalLink";
 
 import Stars from 'react-native-stars';
 
+import {saveMovie, hasMovie, deleteMovie} from '../../utils/storage';
+
 function Detail() {
   const navigation = useNavigation();
   const route = useRoute();
 
   const [movie, setMovie] = useState({});
   const [openLink, setOpenLink] = useState(false);
+  const [favoritedMovie, setFavoritedMovie] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -36,6 +39,9 @@ function Detail() {
 
         if(isActive) {
             setMovie(response.data);
+
+           const isFavorite = await hasMovie(response.data)
+           setFavoritedMovie(isFavorite);
         }
     }
 
@@ -49,14 +55,31 @@ function Detail() {
 
   }, []);
 
+  async function handlefavoriteMovie(movie){
+
+    if(favoritedMovie){
+      await deleteMovie(movie.id);
+      setFavoritedMovie(false);
+      alert('Filme removido da sua lista');
+    }else{
+      await saveMovie('@primereact', movie)
+      setFavoritedMovie(true);
+      alert('Filme salvo na sua lista');  
+    }
+  }
+
   return (
     <Container>
       <Header>
         <HeaderButton activeOpacity={0.7} onPress={() => navigation.goBack()}>
           <Feather name="arrow-left" size={28} color="#FFF" />
         </HeaderButton>
-        <HeaderButton>
-          <Ionicons name="bookmark" size={28} color="#FFF" />
+        <HeaderButton onPress={ () => handlefavoriteMovie(movie)}>
+          {favoritedMovie ? (
+             <Ionicons name="bookmark" size={28} color="#FFF" />
+          ): (
+            <Ionicons name="bookmark-outline" size={28} color="#FFF" />
+          )}
         </HeaderButton>
       </Header>
 
